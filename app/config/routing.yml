@@ -1,0 +1,8 @@
+super_shoes:
+    resource: "@SuperShoesBundle/Resources/config/routing.yml"
+    type:     rest
+    prefix:   /services
+
+NelmioApiDocBundle:
+    resource: "@NelmioApiDocBundle/Resources/config/routing.yml"
+    prefix:   /services/doc

@@ -1,0 +1,4 @@
+services:
+#    super_shoes.example:
+#        class: SuperShoesBundle\Example
+#        arguments: ["@service_id", "plain_value", %parameter%]
