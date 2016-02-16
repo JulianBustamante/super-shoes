@@ -15,8 +15,8 @@ class StoreRepository extends EntityRepository
     public function findAllArticles($store_id)
     {
         return $this->getEntityManager()
-            ->createQuery('SELECT a FROM SupershoesBundle:Article a WHERE a.store_id = :store_id')
-            ->setParameter('store_id', $store_id)
+            ->createQuery('SELECT a FROM SuperShoesBundle:Article a WHERE a.store = :store')
+            ->setParameter('store', $store_id)
             ->getResult();
     }
 }

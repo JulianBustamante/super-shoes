@@ -200,15 +200,14 @@ class StoreController extends FOSRestController
      *   }
      * )
      *
-     * @Annotations\Route("/articles/stores/{id}", defaults={"_format" = "json"})
-     * @Get
+     * @Annotations\Get("/articles/stores/{id}")
      *
      * @param Request $request  the request object
      * @param int     $id the store id.
      *
      * @return View
      */
-    public function getStoreArticles(Request $request, $id)
+    public function getStoreArticlesAction(Request $request, $id)
     {
         $articles = $article = $this->getDoctrine()
             ->getRepository('SuperShoesBundle:Store')->findAllArticles($id);
@@ -235,5 +234,4 @@ class StoreController extends FOSRestController
 
         return $this->handleView($view);
     }
-
 }
