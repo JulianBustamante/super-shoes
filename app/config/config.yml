@@ -87,12 +87,15 @@ braincrafted_bootstrap:
         knp_paginator: true
 
 fos_rest:
+    param_fetcher_listener: true
     view:
         view_response_listener: 'force'
         formats:
             xml: true
             json: true
         templating_formats:
+            html: true
+        force_redirects:
             html: true
     format_listener:
         rules:

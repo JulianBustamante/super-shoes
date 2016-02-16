@@ -2,6 +2,7 @@
 
 namespace SuperShoesBundle\Controller;
 
+use FOS\RestBundle\Controller\Annotations\Get;
 use FOS\RestBundle\Controller\Annotations;
 use FOS\RestBundle\Controller\FOSRestController;
 use FOS\RestBundle\Request\ParamFetcherInterface;
@@ -9,9 +10,11 @@ use FOS\RestBundle\View\View;
 
 use Nelmio\ApiDocBundle\Annotation\ApiDoc;
 
+use SuperShoesBundle\Entity\Store;
 use SuperShoesBundle\Form\StoreType;
 
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Form\FormTypeInterface;
 
@@ -152,4 +155,85 @@ class StoreController extends FOSRestController
         $form = $this->createForm(StoreType::class, $store);
         return $form;
     }
+
+    /**
+     * Creates a new store from the submitted data.
+     *
+     * @ApiDoc(
+     *   resource = true,
+     *   input = "SuperShoesBundle\Form\StoreType",
+     *   statusCodes = {
+     *     200 = "Returned when successful",
+     *     400 = "Returned when the form has errors"
+     *   }
+     * )
+     *
+     * @Annotations\View(
+     *   statusCode = Response::HTTP_BAD_REQUEST
+     * )
+     *
+     * @param Request $request the request object
+     *
+     * @return FormTypeInterface[]|View
+     */
+    public function postStoresAction(Request $request)
+    {
+        $store = new Store();
+        $form = $this->createForm(StoreType::class, $store);
+        $form->submit($request);
+        if ($form->isValid()) {
+            return $this->routeRedirectView('supershoes_get_store', array('id' => $store->getId()));
+        }
+        return array(
+            'form' => $form
+        );
+    }
+
+    /**
+     * Load all the articles from a specific store.
+     *
+     * @ApiDoc(
+     *   resource = true,
+     *   statusCodes = {
+     *     200 = "Returned when successful",
+     *     400 = "Returned when the form has errors"
+     *   }
+     * )
+     *
+     * @Annotations\Route("/articles/stores/{id}", defaults={"_format" = "json"})
+     * @Get
+     *
+     * @param Request $request  the request object
+     * @param int     $id the store id.
+     *
+     * @return View
+     */
+    public function getStoreArticles(Request $request, $id)
+    {
+        $articles = $article = $this->getDoctrine()
+            ->getRepository('SuperShoesBundle:Store')->findAllArticles($id);
+
+        $data = array();
+        $statusCode = 200;
+        $success = true;
+
+        if (null === $article) {
+            $statusCode = Response::HTTP_NOT_FOUND;
+            $data['error_code'] = $statusCode;
+            $data['error_message'] = Response::$statusTexts[$statusCode];
+            $success = false;
+        }
+        else {
+            $data = array('articles' => $articles);
+        }
+
+        $data += array(
+            'success' => $success,
+        );
+
+        $view = $this->view($data, $statusCode);
+
+        return $this->handleView($view);
+    }
+
 }

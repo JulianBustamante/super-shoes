@@ -65,8 +65,7 @@ class Article
 
 
     /**
-     * @ORM\OneToOne(targetEntity="Store")
-     * @ORM\JoinColumn(name="store", referencedColumnName="id")
+     * @ORM\ManyToOne(targetEntity="Store")
      */
     private $store;
 

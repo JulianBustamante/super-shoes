@@ -10,6 +10,7 @@ use FOS\RestBundle\Util\Codes;
 
 use Nelmio\ApiDocBundle\Annotation\ApiDoc;
 
+use SuperShoesBundle\Entity\Article;
 use SuperShoesBundle\Form\ArticleType;
 
 use Symfony\Component\HttpFoundation\Response;
@@ -40,7 +41,7 @@ class ArticleController extends FOSRestController
      *
      * @Annotations\View()
      *
-     * @param Request               $request      the request object
+     * @param Request $request the request object
      * @param ParamFetcherInterface $paramFetcher param fetcher service
      *
      * @return array
@@ -54,7 +55,26 @@ class ArticleController extends FOSRestController
         $articles = $article = $this->getDoctrine()
             ->getRepository('SuperShoesBundle:Article')->findBy(array(), null, $limit, $offset);
 
-        return new View($articles);
+        $data = array();
+        $statusCode = 200;
+        $success = true;
+
+        if (null === $article) {
+            $statusCode = Response::HTTP_NOT_FOUND;
+            $data['error_code'] = $statusCode;
+            $data['error_message'] = Response::$statusTexts[$statusCode];
+            $success = false;
+        } else {
+            $data = array('articles' => $articles);
+        }
+
+        $data += array(
+            'success' => $success,
+        );
+
+        $view = $this->view($data, $statusCode);
+
+        return $this->handleView($view);
     }
 
     /**
@@ -81,10 +101,12 @@ class ArticleController extends FOSRestController
      *   }
      * )
      *
-     * @Annotations\View(templateVar="article")
+     * @Annotations\View(
+     *     templateVar = "article"
+     * )
      *
      * @param Request $request the request object
-     * @param int     $id      the article id
+     * @param int $id the article id
      *
      * @return array
      *
@@ -105,8 +127,7 @@ class ArticleController extends FOSRestController
             $data['error_code'] = $statusCode;
             $data['error_message'] = Response::$statusTexts[$statusCode];
             $success = false;
-        }
-        else {
+        } else {
             $data['article'] = $article;
         }
 
@@ -115,6 +136,7 @@ class ArticleController extends FOSRestController
         );
 
         $view = $this->view($data, $statusCode);
+        $view->setTemplate("SuperShoesBundle:Article:getArticle.html.twig");
 
         return $this->handleView($view);
     }
@@ -135,7 +157,8 @@ class ArticleController extends FOSRestController
      */
     public function newArticleAction()
     {
-        return $this->createForm(ArticleType::class);
+        return $this->createForm(ArticleType::class, null, array(
+            'action' => $this->generateUrl('supershoes_post_articles')));
     }
 
     /**
@@ -152,7 +175,7 @@ class ArticleController extends FOSRestController
      * @Annotations\View()
      *
      * @param Request $request the request object
-     * @param int     $id      the article id
+     * @param int $id the article id
      *
      * @return FormTypeInterface
      *
@@ -170,5 +193,44 @@ class ArticleController extends FOSRestController
 
         $form = $this->createForm(ArticleType::class, $article);
         return $form;
+    }
+
+    /**
+     * Creates a new article from the submitted data.
+     *
+     * @ApiDoc(
+     *   resource = true,
+     *   input = "SuperShoesBundle\Form\ArticleType",
+     *   statusCodes = {
+     *     200 = "Returned when successful",
+     *     400 = "Returned when the form has errors"
+     *   }
+     * )
+     *
+     * @Annotations\View(
+     *   statusCode = Response::HTTP_BAD_REQUEST
+     * )
+     *
+     * @param Request $request the request object
+     *
+     * @return FormTypeInterface[]|View
+     */
+    public function postArticlesAction(Request $request)
+    {
+        $article = new Article();
+        $form = $this->createForm(ArticleType::class, $article);
+        $form->handleRequest($request);
+
+        if ($form->isValid()) {
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($article);
+            $em->flush();
+
+            $view = $this->routeRedirectView('supershoes_get_article', array('id' => $article->getId()));
+            return $this->handleView($view);
+        }
+        return array(
+            'form' => $form
+        );
     }
 }

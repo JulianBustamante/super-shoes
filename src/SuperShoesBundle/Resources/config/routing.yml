@@ -1,11 +1,11 @@
-supershoes_article:
-    type: rest
-    prefix: /
-    resource: SuperShoesBundle\Controller\ArticleController
-    name_prefix:  supershoes_
-
 supershoes_store:
     type: rest
     prefix: /
     resource: SuperShoesBundle\Controller\StoreController
+    name_prefix:  supershoes_
+
+supershoes_article:
+    type: rest
+    prefix: /
+    resource: SuperShoesBundle\Controller\ArticleController
     name_prefix:  supershoes_
