@@ -1,0 +1,10 @@
+{% extends 'SuperShoesBundle::base.html.twig' %}
+
+{% block title %}SuperShoes - Edit Article{% endblock %}
+{% block content %}
+    <h1>Edit Article</h1>
+    {{ form_start(form) }}
+    {{ form_errors(form) }}
+    {{ form_widget(form) }}
+    {{ form_end(form) }}
+{% endblock %}

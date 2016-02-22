@@ -32,7 +32,11 @@ class ArticleController extends FOSRestController
      * @ApiDoc(
      *   resource = true,
      *   statusCodes = {
-     *     200 = "Returned when successful"
+     *     200 = "Returned when successful",
+     *     400 = "Bad request",
+     *     401 = "Returned when the user is not authorized",
+     *     404 = "Returned when the article is not found",
+     *     500 = "Server error"
      *   }
      * )
      *
@@ -52,29 +56,14 @@ class ArticleController extends FOSRestController
         $offset = null == $offset ? 0 : $offset + 1;
         $limit = $paramFetcher->get('limit');
 
-        $articles = $article = $this->getDoctrine()
+        // Get all articles between required limits.
+        $articles = $this->getDoctrine()
             ->getRepository('SuperShoesBundle:Article')->findBy(array(), null, $limit, $offset);
 
-        $data = array();
-        $statusCode = 200;
-        $success = true;
+        // Construct the response.
+        $data = $this->get('super_shoes.utils.webservice')->processResponse($articles, 'articles');
 
-        if (null === $article) {
-            $statusCode = Response::HTTP_NOT_FOUND;
-            $data['error_code'] = $statusCode;
-            $data['error_message'] = Response::$statusTexts[$statusCode];
-            $success = false;
-        } else {
-            $data = array('articles' => $articles);
-        }
-
-        $data += array(
-            'success' => $success,
-        );
-
-        $view = $this->view($data, $statusCode);
-
-        return $this->handleView($view);
+        return $this->view($data, $data['status_code']);
     }
 
     /**
@@ -114,31 +103,17 @@ class ArticleController extends FOSRestController
      */
     public function getArticleAction(Request $request, $id)
     {
+        // Find the article.
         $article = $this->getDoctrine()
             ->getRepository('SuperShoesBundle:Article')
             ->find($id);
 
-        $data = array();
-        $statusCode = 200;
-        $success = true;
-
-        if (null === $article) {
-            $statusCode = Response::HTTP_NOT_FOUND;
-            $data['error_code'] = $statusCode;
-            $data['error_message'] = Response::$statusTexts[$statusCode];
-            $success = false;
-        } else {
-            $data['article'] = $article;
-        }
-
-        $data += array(
-            'success' => $success,
-        );
-
-        $view = $this->view($data, $statusCode);
+        // Construct the response.
+        $data = $this->get('super_shoes.utils.webservice')->processResponse($article, 'article');
+        $view = $this->view($data, $data['status_code']);
         $view->setTemplate("SuperShoesBundle:Article:getArticle.html.twig");
 
-        return $this->handleView($view);
+        return $view;
     }
 
     /**
@@ -191,7 +166,8 @@ class ArticleController extends FOSRestController
             throw $this->createNotFoundException("Article does not exist.");
         }
 
-        $form = $this->createForm(ArticleType::class, $article);
+        $form = $this->createForm(ArticleType::class, $article, array(
+            'action' => $this->generateUrl('supershoes_post_articles')));
         return $form;
     }
 
@@ -222,15 +198,16 @@ class ArticleController extends FOSRestController
         $form->handleRequest($request);
 
         if ($form->isValid()) {
+            // Persist the new article.
             $em = $this->getDoctrine()->getManager();
             $em->persist($article);
             $em->flush();
 
-            $view = $this->routeRedirectView('supershoes_get_article', array('id' => $article->getId()));
-            return $this->handleView($view);
+            return $this->routeRedirectView('supershoes_get_article', array('id' => $article->getId()));
         }
-        return array(
-            'form' => $form
-        );
+        else {
+            // Show the form with the validation errors.
+            return $this->view($form)->setTemplate("SuperShoesBundle:Article:editArticle.html.twig");
+        }
     }
 }

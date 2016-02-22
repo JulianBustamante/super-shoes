@@ -1,0 +1,17 @@
+{% extends 'SuperShoesBundle::base.html.twig' %}
+
+{% block title %}SuperShoes - Articles{% endblock %}
+{% block content %}
+    {% for id, article in articles %}
+        <h1>Article #{{ article.id }}</h1>
+        <p>Name: {{ article.name }}</p>
+        <p>Description: {{ article.description }}</p>
+        <p>Price: {{ article.price }}</p>
+        <p>Total in Shelf: {{ article.totalInShelf }}</p>
+        <p>Total in Vault: {{ article.totalInVault }}</p>
+        <p>Store: {{ article.store }}</p>
+    {% else %}
+        <p>Error code: {{ error_code }}</p>
+        <p>Error message: {{ error_message }}</p>
+    {% endfor %}
+{% endblock %}
