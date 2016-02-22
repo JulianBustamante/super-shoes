@@ -167,7 +167,7 @@ class ArticleController extends FOSRestController
         }
 
         $form = $this->createForm(ArticleType::class, $article, array(
-            'action' => $this->generateUrl('supershoes_post_articles')));
+            'action' => $this->generateUrl('supershoes_put_articles', array('id' => $article->getId()))));
         return $form;
     }
 
@@ -203,11 +203,54 @@ class ArticleController extends FOSRestController
             $em->persist($article);
             $em->flush();
 
-            return $this->routeRedirectView('supershoes_get_article', array('id' => $article->getId()));
+            $view = $this->routeRedirectView('supershoes_get_article', array('id' => $article->getId()));
+            return $this->handleView($view);
         }
         else {
             // Show the form with the validation errors.
             return $this->view($form)->setTemplate("SuperShoesBundle:Article:editArticle.html.twig");
         }
+    }
+
+
+    /**
+     * Update existing article from the submitted data or create a new note at a specific location.
+     *
+     * @ApiDoc(
+     *   resource = true,
+     *   input = "SuperShoesBundle\Form\ArticleType",
+     *   statusCodes = {
+     *     201 = "Returned when a new resource is created",
+     *     204 = "Returned when successful",
+     *     400 = "Returned when the form has errors"
+     *   }
+     * )
+     *
+     * @Annotations\View(
+     *   template="SuperShoesBundle:Article:editArticle.html.twig",
+     *   templateVar="form"
+     * )
+     *
+     * @param Request $request the request object
+     * @param int     $id      the article id
+     *
+     * @return FormTypeInterface|RouteRedirectView
+     *
+     * @throws NotFoundHttpException when note not exist
+     */
+    public function putArticlesAction(Request $request, $id)
+    {
+        $em = $this->getDoctrine()->getManager();
+        $article = $em->getRepository('SuperShoesBundle:Article')->find($id);
+
+        $form = $this->createForm(ArticleType::class, $article, array('method' => 'PUT'));
+        $form->handleRequest($request);
+        if ($form->isValid()) {
+            $em->flush();
+
+            $view = $this->routeRedirectView('supershoes_get_article', array('id' => $article->getId()));
+            return $this->handleView($view);
+        }
+        return $form;
     }
 }

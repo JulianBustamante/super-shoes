@@ -4,6 +4,7 @@
 {% block content %}
     <h1>Edit Article</h1>
     {{ form_start(form) }}
+    <input type="hidden" name="_method" value="put" />
     {{ form_errors(form) }}
     {{ form_widget(form) }}
     {{ form_end(form) }}
