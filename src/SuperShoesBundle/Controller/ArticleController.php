@@ -48,7 +48,7 @@ class ArticleController extends FOSRestController
      * @param Request $request the request object
      * @param ParamFetcherInterface $paramFetcher param fetcher service
      *
-     * @return array
+     * @return View
      */
     public function getArticlesAction(Request $request, ParamFetcherInterface $paramFetcher)
     {
@@ -97,7 +97,7 @@ class ArticleController extends FOSRestController
      * @param Request $request the request object
      * @param int $id the article id
      *
-     * @return array
+     * @return View
      *
      * @throws NotFoundHttpException when article not exist
      */
@@ -128,7 +128,7 @@ class ArticleController extends FOSRestController
      *
      * @Annotations\View()
      *
-     * @return FormTypeInterface
+     * @return \Symfony\Component\Form\Form
      */
     public function newArticleAction()
     {
@@ -152,7 +152,7 @@ class ArticleController extends FOSRestController
      * @param Request $request the request object
      * @param int $id the article id
      *
-     * @return FormTypeInterface
+     * @return \Symfony\Component\Form\Form
      *
      * @throws NotFoundHttpException when article not exist
      */
@@ -163,11 +163,13 @@ class ArticleController extends FOSRestController
             ->find($id);
 
         if (null === $article) {
-            throw $this->createNotFoundException("Article does not exist.");
+            throw $this->createNotFoundException('Article does not exist.');
         }
 
         $form = $this->createForm(ArticleType::class, $article, array(
-            'action' => $this->generateUrl('supershoes_put_articles', array('id' => $article->getId()))));
+            'action' => $this->generateUrl('supershoes_put_articles',
+            array('id' => $article->getId())))
+        );
         return $form;
     }
 
@@ -204,7 +206,7 @@ class ArticleController extends FOSRestController
             $em->flush();
 
             $view = $this->routeRedirectView('supershoes_get_article', array('id' => $article->getId()));
-            return $this->handleView($view);
+            return $view;
         }
         else {
             // Show the form with the validation errors.
@@ -226,15 +228,10 @@ class ArticleController extends FOSRestController
      *   }
      * )
      *
-     * @Annotations\View(
-     *   template="SuperShoesBundle:Article:editArticle.html.twig",
-     *   templateVar="form"
-     * )
-     *
      * @param Request $request the request object
      * @param int     $id      the article id
      *
-     * @return FormTypeInterface|RouteRedirectView
+     * @return \Symfony\Component\Form\Form | View
      *
      * @throws NotFoundHttpException when note not exist
      */
@@ -249,8 +246,9 @@ class ArticleController extends FOSRestController
             $em->flush();
 
             $view = $this->routeRedirectView('supershoes_get_article', array('id' => $article->getId()));
-            return $this->handleView($view);
+            $view->setTemplate("SuperShoesBundle:Article:getArticle.html.twig");
+            return $view;
         }
-        return $form;
+        return $this->view($form);
     }
 }

@@ -1,0 +1,13 @@
+{% extends 'SuperShoesBundle::base.html.twig' %}
+
+{% block title %}SuperShoes - Store{% endblock %}
+{% block content %}
+    {% if store is defined %}
+        <h1>Store #{{ store.id }}</h1>
+        <p>Name: {{ store.name }}</p>
+        <p>Address: {{ store.address }}</p>
+    {% else %}
+        <p>Error code: {{ error_code }}</p>
+        <p>Error message: {{ error_message }}</p>
+    {% endif %}
+{% endblock %}

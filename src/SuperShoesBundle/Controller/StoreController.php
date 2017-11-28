@@ -13,6 +13,7 @@ use Nelmio\ApiDocBundle\Annotation\ApiDoc;
 use SuperShoesBundle\Entity\Store;
 use SuperShoesBundle\Form\StoreType;
 
+use Symfony\Component\Form\Form;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -44,7 +45,7 @@ class StoreController extends FOSRestController
      * @param Request               $request      the request object
      * @param ParamFetcherInterface $paramFetcher param fetcher service
      *
-     * @return array
+     * @return ArticleCollection
      */
     public function getStoresAction(Request $request, ParamFetcherInterface $paramFetcher)
     {
@@ -87,7 +88,7 @@ class StoreController extends FOSRestController
      * @param Request $request the request object
      * @param int     $id      the store id
      *
-     * @return array
+     * @return View
      *
      * @throws NotFoundHttpException when store not exist
      */
@@ -101,7 +102,7 @@ class StoreController extends FOSRestController
             throw $this->createNotFoundException("Store does not exist.");
         }
 
-        return new View($store);
+        return $this->view($store);
     }
 
     /**
@@ -116,10 +117,9 @@ class StoreController extends FOSRestController
      *
      * @Annotations\View()
      *
-     * @return FormTypeInterface
+     * @return \Symfony\Component\Form\Form
      */
-    public function newStoreAction()
-    {
+    public function newStoreAction(): Form {
         return $this->createForm(StoreType::class);
     }
 
@@ -139,21 +139,19 @@ class StoreController extends FOSRestController
      * @param Request $request the request object
      * @param int     $id      the store id
      *
-     * @return FormTypeInterface
+     * @return Form
      *
      * @throws NotFoundHttpException when store not exist
      */
-    public function editStoreAction(Request $request, $id)
-    {
+    public function editStoreAction(Request $request, $id): Form {
         $store = $store = $this->getDoctrine()
             ->getRepository('SuperShoesBundle:Store')
             ->find($id);
         if (null === $store) {
-            throw $this->createNotFoundException("Store does not exist.");
+            throw $this->createNotFoundException('Store does not exist.');
         }
 
-        $form = $this->createForm(StoreType::class, $store);
-        return $form;
+        return $this->createForm(StoreType::class, $store);
     }
 
     /**
@@ -230,8 +228,6 @@ class StoreController extends FOSRestController
             'success' => $success,
         );
 
-        $view = $this->view($data, $statusCode);
-
-        return $this->handleView($view);
+        return $this->view($data, $statusCode);
     }
 }
